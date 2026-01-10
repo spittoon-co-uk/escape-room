@@ -1,0 +1,22 @@
+{
+  "name": "escape-room",
+  "version": "1.0.0",
+  "description": "A world-state and rule engine that happens to be an escape room simulator",
+  "main": "index.js",
+  "scripts": {
+    "test": "tsc",
+    "build": "tsc",
+    "test:watch": "jest --watch"
+  },
+  "author": "Michael Adamson",
+  "license": "ISC",
+  "keywords": [],
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "jest": "^30.2.0",
+    "ts-jest": "^29.4.6",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.16"
+  },
+  "type": "module"
+}
