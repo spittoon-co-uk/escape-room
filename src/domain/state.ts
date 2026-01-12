@@ -9,3 +9,8 @@ export interface Room {
     description: string;
     objects: Object[];
 };
+
+export interface Object {
+    name: string;
+    description: string;
+}
