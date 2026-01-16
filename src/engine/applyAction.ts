@@ -18,6 +18,7 @@ const actionHandlers: Record<Action["kind"], ActionHandler> = {
   take: handleTake,
   move: handleMove,
   unlock: handleUnlock,
+  explore: handleExplore,
 };
 
 function handleInspect(action: Action, state: GameState): GameState {
@@ -96,7 +97,7 @@ function handleTake(action: Action, state: GameState): GameState {
 
 function handleMove(action: Action, state: GameState): GameState {
   const targetRoomIndex = state.rooms.findIndex(
-    (room) => room.name === action.objectId
+    (room) => room.name.toLowerCase() === action.objectId.toLowerCase()
   );
 
   if (targetRoomIndex === -1) {
@@ -133,6 +134,16 @@ function handleUnlock(action: Action, state: GameState): GameState {
     return state;
   }
 
+  // Check if player has the required key
+  if (objectInRoom.unlockedBy) {
+    const hasKey = state.inventory.some(item => item.name === objectInRoom.unlockedBy);
+    
+    if (!hasKey) {
+      console.log(`You need a ${objectInRoom.unlockedBy} to unlock the ${objectInRoom.name}.`);
+      return state;
+    }
+  }
+
   // Notify player of successful unlock
   console.log(`You unlock the ${objectInRoom.name}.`);
 
@@ -150,4 +161,34 @@ function handleUnlock(action: Action, state: GameState): GameState {
         : room
     ),
   };
+}
+
+function handleExplore(action: Action, state: GameState): GameState {
+  const currentRoom = state.rooms[state.currentRoomIndex]!;
+  
+  // Display room description
+  console.log(`\nYou are in ${currentRoom.name}`);
+  console.log(currentRoom.description);
+  
+  // List objects in the room
+  if (currentRoom.objects.length > 0) {
+    console.log("\nYou see:");
+    currentRoom.objects.forEach(obj => {
+      const lockedStatus = obj.locked ? " (locked)" : "";
+      console.log(`  - ${obj.name}${lockedStatus}`);
+    });
+  } else {
+    console.log("\nThe room is empty.");
+  }
+  
+  // List inventory
+  if (state.inventory.length > 0) {
+    console.log("\nYou are carrying:");
+    state.inventory.forEach(item => {
+      console.log(`  - ${item.name}`);
+    });
+  }
+  
+  // No state change for explore action
+  return state;
 }

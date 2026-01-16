@@ -17,7 +17,7 @@ function main(): void {
   console.log("\n=== Escape Room Simulator ===");
   console.log(`You are in: ${state.rooms[state.currentRoomIndex]!.name}`);
   console.log(state.rooms[state.currentRoomIndex]!.description);
-  console.log("\nCommands: inspect <object>, take <object>, move <room>, unlock <object>, quit\n");
+  console.log("\nCommands: inspect <object>, take <object>, move <room>, unlock <object>, explore, quit\n");
 
   // Game loop - prompt for input
   const promptUser = () => {
@@ -37,16 +37,24 @@ function main(): void {
       const target = parts.slice(1).join(" ");
 
       // Validate command
-      if (!command || !target) {
-        console.log("Invalid command. Use: <action> <object/room>");
+      const validActions = ["inspect", "take", "move", "unlock", "explore"];
+      if (!validActions.includes(command)) {
+        console.log(`Unknown action: ${command}`);
         promptUser();
         return;
       }
 
-      // Map command to action kind
-      const validActions = ["inspect", "take", "move", "unlock"];
-      if (!validActions.includes(command)) {
-        console.log(`Unknown action: ${command}`);
+      // Explore doesn't need a target
+      if (command === "explore") {
+        const action: Action = { kind: "explore", objectId: "" };
+        state = applyAction(action, state);
+        console.log("");
+        promptUser();
+        return;
+      }
+
+      if (!target) {
+        console.log("Invalid command. Use: <action> <object/room>");
         promptUser();
         return;
       }
