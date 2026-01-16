@@ -1,30 +1,79 @@
+import * as readline from "readline";
 import { initialState } from "./content/initialState";
 import { Action } from "./domain/action";
 import { GameState } from "./domain/state";
 import { applyAction } from "./engine/applyAction";
 
-
 function main(): void {
-  let state: GameState = {
-    rooms: [{
-      name: "Foyer", description: "the first room", objects: [{ name: "painting", description: "maybe this can be moved..." }]
-    }],
-    inventory: [{
-      name: "key", description: "can unlock doors"
-    }],
-    isComplete: false,
+  let state: GameState = initialState;
+
+  // Create readline interface for user input
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+
+  // Display initial game state
+  console.log("\n=== Escape Room Simulator ===");
+  console.log(`You are in: ${state.rooms[state.currentRoomIndex]!.name}`);
+  console.log(state.rooms[state.currentRoomIndex]!.description);
+  console.log("\nCommands: inspect <object>, take <object>, move <room>, unlock <object>, quit\n");
+
+  // Game loop - prompt for input
+  const promptUser = () => {
+    rl.question("> ", (input) => {
+      const trimmed = input.trim().toLowerCase();
+
+      // Handle quit command
+      if (trimmed === "quit" || trimmed === "exit") {
+        console.log("Thanks for playing!");
+        rl.close();
+        return;
+      }
+
+      // Parse command
+      const parts = trimmed.split(" ");
+      const command = parts[0];
+      const target = parts.slice(1).join(" ");
+
+      // Validate command
+      if (!command || !target) {
+        console.log("Invalid command. Use: <action> <object/room>");
+        promptUser();
+        return;
+      }
+
+      // Map command to action kind
+      const validActions = ["inspect", "take", "move", "unlock"];
+      if (!validActions.includes(command)) {
+        console.log(`Unknown action: ${command}`);
+        promptUser();
+        return;
+      }
+
+      // Create and apply action
+      const action: Action = {
+        kind: command as Action["kind"],
+        objectId: target,
+      };
+
+      state = applyAction(action, state);
+
+      // Check win condition
+      if (state.isComplete) {
+        console.log("\n🎉 Congratulations! You've escaped!");
+        rl.close();
+        return;
+      }
+
+      // Continue game loop
+      console.log("");
+      promptUser();
+    });
   };
 
-  console.log("=== Initial State ===");
-  console.log(state);
-
-  // Example action
-  const action: Action = { kind: "inspect", objectId: "painting" };
-
-  state = applyAction(action, state);
-
-  console.log("=== State After Action ===");
-  console.log(state);
+  // Start the game loop
+  promptUser();
 }
 
 main();
